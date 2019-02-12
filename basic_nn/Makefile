@@ -1,11 +1,11 @@
 
-basenn:	\
+base_nn:	\
 	obj \
 	obj/main.o \
 	obj/BaseNN.o \
 	obj/StdStringUtils.o \
 	obj/RegexMatch.o
-	g++ -g -o basenn \
+	g++ -g -o base_nn \
 		obj/main.o \
 		obj/BaseNN.o \
 		obj/StdStringUtils.o \
@@ -38,5 +38,5 @@ obj/RegexMatch.o: \
 	g++ -c -g -Ihdr -o obj/RegexMatch.o src/RegexMatch.C
 
 clean:
-	-(rm -fr obj basenn);
+	-(rm -fr obj base_nn);
 	

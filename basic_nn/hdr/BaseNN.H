@@ -189,6 +189,7 @@ public: // member functions
     //
     // neuron - access NN in a layer
     // layer - access a layer
+    // number_of_layers - return the number of layers in NN
     //
     inline NNNeuron &neuron(long layer, long neuron)
     {
@@ -201,6 +202,10 @@ public: // member functions
     inline NNLayer &operator[](long layer)
     {
         return *_layers[layer];
+    }
+    inline long number_of_layers() const
+    {
+        return _layers.size();
     }
 
     //

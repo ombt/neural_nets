@@ -141,15 +141,19 @@ NNTopology::load_from_file(const string &file_path)
                 for (long layer=1, neurons = *nit++; nit!=nitend; ++nit, ++layer)
                 {
                     long weights_in_layer = (neurons+1)*(*nit);
+#ifdef LOCAL_DEBUG
                     cout << "Layer: " << layer 
                          << ", Neurons in Layer + Bias: " << (neurons+1)
                          << ", Neurons in Next Layer: " << *nit
                          << ", Weights in Layer: " << weights_in_layer 
                          << endl;
+#endif
                     weights_to_read += weights_in_layer;
                     neurons = *nit;
                 }
+#ifdef LOCAL_DEBUG
                 cout << "Weights to Read: " << weights_to_read << endl;
+#endif
 
                 state = ReadWeightsPerLayer;
             }
@@ -161,7 +165,9 @@ NNTopology::load_from_file(const string &file_path)
             istringstream(value) >> weight;
             _weights.push_back(weight);
 
+#ifdef LOCAL_DEBUG
             cout << "No: " << iweight++ << ", Weight: " << weight << endl;
+#endif
 
             if (--weights_to_read <= 0)
             {
@@ -188,11 +194,11 @@ NNTopology::load_from_file(const string &file_path)
 
     NeuronsPerLayerCIt nit    = _neurons_per_layer.begin();
     NeuronsPerLayerCIt nitend = _neurons_per_layer.end();
-    for ( ; nit!=nitend; ++nit)
+    for (long previous=*nit++ ; nit!=nitend; ++nit)
     {
-        total += *nit;
-        total += 1; // one bias weight per layer
+        total += (previous+1)*(*nit); // one bias weight per layer
         _offsets.push_back(total);
+        previous=*nit;
     }
 }
 
@@ -337,9 +343,10 @@ NeuralNet::operator=(const NeuralNet &rhs)
 ostream &
 operator<<(ostream &os, const NNTopology &src)
 {
-    os << "Number of Layers: " << src._number_of_layers << endl;
-    os << "Number of Neurons: " << src._number_of_neurons << endl;
+    os << endl << "Number of Layers: " << src._number_of_layers << endl;
+    os << endl << "Number of Neurons: " << src._number_of_neurons << endl;
 
+    os << endl << "Neurons per Layer: " << endl;
     NeuronsPerLayerCIt npl_it    = src._neurons_per_layer.begin();
     NeuronsPerLayerCIt npl_itend = src._neurons_per_layer.end();
     for (int layer=1 ; npl_it!=npl_itend; ++npl_it, ++layer)
@@ -347,6 +354,7 @@ operator<<(ostream &os, const NNTopology &src)
         os << "Layer: " << layer << ", Number of Neurons: " << *npl_it << endl;
     }
 
+    os << endl << "Weights: " << endl;
     WeightsCIt w_it    = src._weights.begin();
     WeightsCIt w_itend = src._weights.end();
     for ( ; w_it!=w_itend; ++w_it)
@@ -354,6 +362,7 @@ operator<<(ostream &os, const NNTopology &src)
         os << "Weight: " << *w_it << endl;
     }
 
+    os << endl << "Layer Offsets: " << endl;
     LayerOffsetsCIt lo_it    = src._offsets.begin();
     LayerOffsetsCIt lo_itend = src._offsets.end();
     for (int layer=1 ; lo_it!=lo_itend; ++layer, ++lo_it)
