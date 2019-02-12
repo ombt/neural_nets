@@ -1,38 +1,38 @@
 
 basenn:	\
-	main.o \
-	BaseNN.o \
-	StdStringUtils.o \
-	RegexMatch.o
-	g++ -I. -o basenn \
-		main.o \
-		BaseNN.o \
-		StdStringUtils.o \
-		RegexMatch.o
+	obj/main.o \
+	obj/BaseNN.o \
+	obj/StdStringUtils.o \
+	obj/RegexMatch.o
+	g++ -g -o basenn \
+		obj/main.o \
+		obj/BaseNN.o \
+		obj/StdStringUtils.o \
+		obj/RegexMatch.o
 
-main.o:	\
-	main.C \
-	BaseNN.H
-	g++ -c -I. -o main.o main.C
+obj/main.o:	\
+	src/main.C \
+	hdr/BaseNN.H
+	g++ -c -g -Ihdr -o obj/main.o src/main.C
 
-BaseNN.o: \
-	BaseNN.C \
-	BaseNN.H \
-	ExtUseCntPtr.H \
-	Atomic.H
-	g++ -c -I. -o BaseNN.o BaseNN.C
+obj/BaseNN.o: \
+	src/BaseNN.C \
+	hdr/BaseNN.H \
+	hdr/ExtUseCntPtr.H \
+	hdr/Atomic.H
+	g++ -c -g -Ihdr -o obj/BaseNN.o src/BaseNN.C
 
-StdStringUtils.o: \
-	StdStringUtils.C \
-	StdStringUtils.H \
-	StdStringUtils.I
-	g++ -c -I. -o StdStringUtils.o StdStringUtils.C
+obj/StdStringUtils.o: \
+	src/StdStringUtils.C \
+	hdr/StdStringUtils.H \
+	hdr/StdStringUtils.I
+	g++ -c -g -Ihdr -o obj/StdStringUtils.o src/StdStringUtils.C
 
-RegexMatch.o: \
-	RegexMatch.C \
-	RegexMatch.H 
-	g++ -c -I. -o RegexMatch.o RegexMatch.C
+obj/RegexMatch.o: \
+	src/RegexMatch.C \
+	hdr/RegexMatch.H 
+	g++ -c -g -Ihdr -o obj/RegexMatch.o src/RegexMatch.C
 
 clean:
-	-(rm -f *.o basaenn);
+	-(rm -f obj/*.o basenn);
 	
