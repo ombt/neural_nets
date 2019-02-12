@@ -1,5 +1,6 @@
 
 basenn:	\
+	obj \
 	obj/main.o \
 	obj/BaseNN.o \
 	obj/StdStringUtils.o \
@@ -9,6 +10,9 @@ basenn:	\
 		obj/BaseNN.o \
 		obj/StdStringUtils.o \
 		obj/RegexMatch.o
+
+obj:
+	mkdir -p obj
 
 obj/main.o:	\
 	src/main.C \
@@ -34,5 +38,5 @@ obj/RegexMatch.o: \
 	g++ -c -g -Ihdr -o obj/RegexMatch.o src/RegexMatch.C
 
 clean:
-	-(rm -f obj/*.o basenn);
+	-(rm -fr obj basenn);
 	
