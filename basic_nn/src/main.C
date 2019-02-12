@@ -18,6 +18,9 @@ main(int argc, char **argv)
     NNTopology topology;
     topology.load_from_file(topology_file_path);
 
+    cout << "Toplogy: " << endl;
+    cout << topology << endl;
+
     NeuralNet nn(NNTopology());
 
     return 0;

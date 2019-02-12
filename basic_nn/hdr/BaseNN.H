@@ -6,6 +6,7 @@
 //
 #include <vector>
 #include <string>
+#include <iostream>
 
 //
 // local includes
@@ -89,6 +90,11 @@ public: // member functions
                         next_n];
     }
 
+    //
+    // i/o operator
+    //
+    friend ostream &operator<<(ostream &os, const NNTopology &src);
+
 protected: // member data
     long _number_of_layers;
     long _number_of_neurons;
@@ -120,6 +126,11 @@ public: // member functions
         return _weights[neuron];
     }
 
+    //
+    // i/o operator
+    //
+    friend ostream &operator<<(ostream &os, const NNNeuron &src);
+
 protected: // member data
     Weights _weights;
 };
@@ -150,6 +161,11 @@ public: // member functions
     {
         return *_neurons[neuron];
     }
+
+    //
+    // i/o operator
+    //
+    friend ostream &operator<<(ostream &os, const NNLayer &src);
 
 protected: // member data
     vector<ExtUseCntPtr<NNNeuron> > _neurons;
@@ -186,6 +202,11 @@ public: // member functions
     {
         return *_layers[layer];
     }
+
+    //
+    // i/o operator
+    //
+    friend ostream &operator<<(ostream &os, const NeuralNet &src);
 
 private: // not allowed
     NeuralNet();
