@@ -481,6 +481,11 @@ operator<<(ostream &os, const NNTopology &src)
     return os;
 }
 
+void
+NeuralNet::apply(const NNVector &inv, NNVector &outv) const
+{
+}
+
 ostream &
 operator<<(ostream &os, const NNNeuron &src)
 {

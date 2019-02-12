@@ -35,6 +35,8 @@ typedef LayerOffsets::const_iterator LayerOffsetsCIt;
 //
 // base neural net classes
 //
+typedef vector<double> NNVector;
+
 class NNTopology
 {
 protected: // member data types
@@ -202,6 +204,11 @@ public: // member functions
     NeuralNet &operator=(const NeuralNet &rhs);
     virtual void append(NNLayer *pnnl);
     virtual void load_topology();
+
+    //
+    // apply - apply NN to an input and generate output
+    //
+    void apply(const NNVector &inv, NNVector &outv) const;
 
     //
     // i/o operator
