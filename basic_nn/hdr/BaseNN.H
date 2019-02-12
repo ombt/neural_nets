@@ -59,13 +59,9 @@ public: // member functions
 
     //
     // load_from_file - read topology file
+    // operator= - assignment operator
     //
     void load_from_file(const string &file_path);
-
-    //
-    //
-    // assignment operator
-    //
     NNTopology &operator=(const NNTopology &rhs);
 
     //
@@ -114,17 +110,16 @@ public: // member functions
     virtual ~NNNeuron();
 
     //
-    // assignment operator
-    //
-    NNNeuron &operator=(const NNNeuron &rhs);
-
-    //
     // weight - access a weight
+    // operator= - assignment operator
+    // append - append a weight
     //
     inline Weight &weight(long neuron)
     {
         return _weights[neuron];
     }
+    NNNeuron &operator=(const NNNeuron &rhs);
+    virtual void append(double weight);
 
     //
     // i/o operator
@@ -146,12 +141,9 @@ public: // member functions
     virtual ~NNLayer();
 
     //
-    // assignment operator
-    //
-    NNLayer &operator=(const NNLayer &rhs);
-
-    //
     // neuron - access NN in a layer
+    // operator= - assignment operator
+    // append - append a neueon
     //
     inline NNNeuron &operator[](long neuron)
     {
@@ -161,6 +153,8 @@ public: // member functions
     {
         return *_neurons[neuron];
     }
+    NNLayer &operator=(const NNLayer &rhs);
+    virtual void append(NNNeuron *pnnn);
 
     //
     // i/o operator
@@ -182,14 +176,12 @@ public: // member functions
     virtual ~NeuralNet();
 
     //
-    // assignment operator
-    //
-    NeuralNet &operator=(const NeuralNet &rhs);
-
-    //
     // neuron - access NN in a layer
     // layer - access a layer
     // number_of_layers - return the number of layers in NN
+    // operator= - assignment operator
+    // append - append a new layer
+    // load_topology - create NN from topology
     //
     inline NNNeuron &neuron(long layer, long neuron)
     {
@@ -207,6 +199,9 @@ public: // member functions
     {
         return _layers.size();
     }
+    NeuralNet &operator=(const NeuralNet &rhs);
+    virtual void append(NNLayer *pnnl);
+    virtual void load_topology();
 
     //
     // i/o operator

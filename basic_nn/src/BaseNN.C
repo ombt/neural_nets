@@ -268,6 +268,13 @@ NNNeuron::operator=(const NNNeuron &rhs)
     return *this;
 }
 
+void 
+NNNeuron::append(double weight)
+{
+    _weights.push_back(weight);
+}
+
+
 //
 // base neural net layer class
 //
@@ -302,6 +309,12 @@ NNLayer::operator=(const NNLayer &rhs)
     return *this;
 }
 
+void
+NNLayer::append(NNNeuron *pnnn)
+{
+    _neurons.push_back(ExtUseCntPtr<NNNeuron>(pnnn));
+}
+
 //
 // base neural net class
 //
@@ -309,6 +322,7 @@ NeuralNet::NeuralNet(const NNTopology &topology) :
     _topology(topology),
     _layers()
 {
+    load_topology();
 }
 
 NeuralNet::NeuralNet(const NeuralNet &src) :
@@ -335,6 +349,100 @@ NeuralNet::operator=(const NeuralNet &rhs)
                        rhs._layers.end());
     }
     return *this;
+}
+
+void
+NeuralNet::append(NNLayer *pnnl)
+{
+    _layers.push_back(ExtUseCntPtr<NNLayer>(pnnl));
+}
+
+void
+NeuralNet::load_topology()
+{
+    long max_layers = _topology.number_of_layers();
+    for (long layer=0; layer<max_layers; ++layer)
+    {
+        long neurons_in_layer = _topology.neurons_per_layer()[layer];
+        cout << "Layer: " << (layer+1) 
+             << ", Neurons: " << neurons_in_layer 
+             << endl;
+
+        //
+        // new layer
+        //
+        NNLayer *pl = new NNLayer;
+
+        long next_layer = layer + 1;
+        if (next_layer < max_layers)
+        {
+            //
+            // get weights for this layer connecting to next layer
+            //
+            long neurons_in_next_layer = _topology.neurons_per_layer()[next_layer];
+            for (long nil=0; nil<=neurons_in_layer; ++nil)
+            {
+                //
+                // new neuron
+                //
+                NNNeuron *pn = new NNNeuron;
+
+                for (long ninl=0; ninl<neurons_in_next_layer; ++ninl)
+                {
+                    double weight = _topology.weight(layer, nil, ninl);
+                    if (nil>0)
+                    {
+                        cout << "Layer: " << (layer+1)
+                             << ", This Layer Neuron: " << nil
+                             << ", Next Layer Neuron: " << (ninl+1)
+                             << ", Weight: " << weight
+                             << endl;
+                    }
+                    else
+                    {
+                        cout << "Layer: " << (layer+1)
+                             << ", This Layer Bias: " << 1
+                             << ", Next Layer Neuron: " << (ninl+1)
+                             << ", Weight: " << weight
+                             << endl;
+                    }
+
+                    //
+                    // append weight to this neuron
+                    //
+                    pn->append(weight);
+                }
+
+                //
+                // append neuron to this layer
+                //
+                pl->append(pn);
+            }
+        }
+        else
+        {
+            //
+            // output layer - no weights
+            //
+            for (long nil=0; nil<=neurons_in_layer; ++nil)
+            {
+                //
+                // new neuron
+                //
+                NNNeuron *pn = new NNNeuron;
+
+                //
+                // append neuron to this layer
+                //
+                pl->append(pn);
+            }
+        }
+
+        //
+        // append layer to this NN
+        //
+        append(pl);
+    }
 }
 
 //
