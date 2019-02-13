@@ -17,6 +17,10 @@
 #include "StdStringUtils.H"
 #include "RegexMatch.H"
 
+#undef DUMP
+#define DUMP(X) \
+    cout << "Line: " << __LINE__ << " " << #X << ": " << endl << (X) << endl
+
 //
 // NN topology for NN
 //
@@ -24,7 +28,7 @@ NNTopology::NNTopology() : _number_of_layers(0),
                            _number_of_neurons(0),
                            _neurons_per_layer(),
                            _weights(),
-                           _offsets()
+                           _layer_offsets()
 {
 }
 
@@ -35,7 +39,7 @@ NNTopology::NNTopology(long number_of_layers,
                            _number_of_neurons(0),
                            _neurons_per_layer(),
                            _weights(),
-                           _offsets()
+                           _layer_offsets()
 {
     _neurons_per_layer.insert(_neurons_per_layer.begin(), 
                               neurons_per_layer.begin(),
@@ -49,7 +53,7 @@ NNTopology::NNTopology(long number_of_layers,
                                     _neurons_per_layer.end(), 0);
 
     long total = 0;
-    _offsets.push_back(total);
+    _layer_offsets.push_back(total);
 
     NeuronsPerLayerCIt it    = _neurons_per_layer.begin();
     NeuronsPerLayerCIt itend = _neurons_per_layer.end();
@@ -57,7 +61,7 @@ NNTopology::NNTopology(long number_of_layers,
     {
         total += *it;
         total += 1; // one bias weight per layer
-        _offsets.push_back(total);
+        _layer_offsets.push_back(total);
     }
 }
                        
@@ -66,7 +70,7 @@ NNTopology::NNTopology(const NNTopology &src) :
                            _number_of_neurons(src._number_of_neurons),
                            _neurons_per_layer(),
                            _weights(),
-                           _offsets()
+                           _layer_offsets()
 {
     _neurons_per_layer.insert(_neurons_per_layer.begin(), 
                               src._neurons_per_layer.begin(),
@@ -76,9 +80,9 @@ NNTopology::NNTopology(const NNTopology &src) :
                     src._weights.begin(),
                     src._weights.end());
 
-    _offsets.insert(_offsets.begin(), 
-                    src._offsets.begin(),
-                    src._offsets.end());
+    _layer_offsets.insert(_layer_offsets.begin(), 
+                    src._layer_offsets.begin(),
+                    src._layer_offsets.end());
 }
 
 void
@@ -89,7 +93,7 @@ NNTopology::load_from_file(const string &file_path)
 
     _neurons_per_layer.clear();
     _weights.clear();
-    _offsets.clear();
+    _layer_offsets.clear();
 
     string contents;
     read_file(file_path, contents);
@@ -190,14 +194,14 @@ NNTopology::load_from_file(const string &file_path)
                                     _neurons_per_layer.end(), 0);
 
     long total = 0;
-    _offsets.push_back(total);
+    _layer_offsets.push_back(total);
 
     NeuronsPerLayerCIt nit    = _neurons_per_layer.begin();
     NeuronsPerLayerCIt nitend = _neurons_per_layer.end();
     for (long previous=*nit++ ; nit!=nitend; ++nit)
     {
         total += (previous+1)*(*nit); // one bias weight per layer
-        _offsets.push_back(total);
+        _layer_offsets.push_back(total);
         previous=*nit;
     }
 }
@@ -216,7 +220,7 @@ NNTopology::operator=(const NNTopology &rhs)
 
         _neurons_per_layer.clear();
         _weights.clear();
-        _offsets.clear();
+        _layer_offsets.clear();
 
         _neurons_per_layer.insert(_neurons_per_layer.begin(), 
                                   rhs._neurons_per_layer.begin(),
@@ -226,9 +230,9 @@ NNTopology::operator=(const NNTopology &rhs)
                         rhs._weights.begin(),
                         rhs._weights.end());
 
-        _offsets.insert(_offsets.begin(), 
-                        rhs._offsets.begin(),
-                        rhs._offsets.end());
+        _layer_offsets.insert(_layer_offsets.begin(), 
+                        rhs._layer_offsets.begin(),
+                        rhs._layer_offsets.end());
     }
 
     return *this;
@@ -238,11 +242,13 @@ NNTopology::operator=(const NNTopology &rhs)
 // base neural net neuron
 //
 NNNeuron::NNNeuron() :
+    _value(numeric_limits<double>::quiet_NaN()),
     _weights()
 {
 }
 
 NNNeuron::NNNeuron(const NNNeuron &src) :
+    _value(src._value),
     _weights()
 {
     _weights.insert(_weights.begin(), 
@@ -260,6 +266,8 @@ NNNeuron::operator=(const NNNeuron &rhs)
 {
     if (this != &rhs)
     {
+        _value = rhs._value;
+
         _weights.clear();
         _weights.insert(_weights.begin(), 
                         rhs._weights.begin(), 
@@ -383,7 +391,7 @@ NeuralNet::load_topology()
             for (long nil=0; nil<=neurons_in_layer; ++nil)
             {
                 //
-                // new neuron
+                // new neuron in layer. remember the first neuron, 
                 //
                 NNNeuron *pn = new NNNeuron;
 
@@ -414,7 +422,8 @@ NeuralNet::load_topology()
                 }
 
                 //
-                // append neuron to this layer
+                // append neuron to this layer (first neuron in the layer
+                // is the bias term).
                 //
                 pl->append(pn);
             }
@@ -446,30 +455,66 @@ NeuralNet::load_topology()
 }
 
 void
-NeuralNet::apply(const NNVector &inv, NNVector &outv) const
+NeuralNet::apply(const NNVector &inv, NNVector &outv)
 {
     assert(layer(0).number_of_neurons() == inv.size());
 
+    //
+    // set all bias terms to one
+    //
+    for (int ilayer=0; ilayer<number_of_layers(); ++ilayer)
+    {
+        layer(ilayer).neuron(0)._value = 1.0;
+    }
+DUMP(*this);
+
     for (int ineuron=0; ineuron<layer(0).number_of_neurons(); ++ineuron)
     {
-        neuron(0,ineuron)._value = inv[ineuron];
+        layer(0).neuron(ineuron+1)._value = inv[ineuron];
     }
+DUMP(*this);
 
     for (int ilayer=0; ilayer<number_of_layers(); ++ilayer)
     {
-        const NNLayer &this_layer = layer(ilayer);
+        NNLayer &this_layer = layer(ilayer);
+DUMP(this_layer);
 
         int inext_layer = ilayer + 1;
         if (inext_layer < number_of_layers())
         {
-            const NNLayer &next_layer = layer(inext_layer);
-            
-            // for (int ineuron=0
+            NNLayer &next_layer = layer(inext_layer);
+DUMP(next_layer);
+            for (int inl=1; inl<=next_layer.number_of_neurons(); ++inl)
+            {
+                NNNeuron &next_layer_neuron = next_layer[inl];
+                next_layer_neuron._value = 0.0;
+DUMP(next_layer_neuron);
+
+                for (int il=0; il<this_layer.number_of_nodes(); ++il)
+                {
+                    NNNeuron &this_layer_neuron = this_layer[il];
+DUMP(this_layer_neuron);
+                    next_layer_neuron._value += 
+                        this_layer_neuron._value*this_layer_neuron.weight(inl-1);
+                }
+DUMP(next_layer_neuron);
+            }
+DUMP(next_layer);
         }
         else
         {
+DUMP(this_layer);
+            outv.clear();
+DUMP(outv);
+            for (int il=1; il<=this_layer.number_of_neurons(); ++il)
+            {
+                NNNeuron &this_layer_neuron = this_layer[il];
+                outv.push_back(this_layer_neuron._value);
+            }
+DUMP(outv);
         }
     }
+DUMP(*this);
 }
 
 //
@@ -498,8 +543,8 @@ operator<<(ostream &os, const NNTopology &src)
     }
 
     os << endl << "Layer Offsets: " << endl;
-    LayerOffsetsCIt lo_it    = src._offsets.begin();
-    LayerOffsetsCIt lo_itend = src._offsets.end();
+    LayerOffsetsCIt lo_it    = src._layer_offsets.begin();
+    LayerOffsetsCIt lo_itend = src._layer_offsets.end();
     for (int layer=1 ; lo_it!=lo_itend; ++layer, ++lo_it)
     {
         os << "Layer: " << layer << ", Layer Offset: " << *lo_it << endl;
@@ -511,18 +556,40 @@ operator<<(ostream &os, const NNTopology &src)
 ostream &
 operator<<(ostream &os, const NNNeuron &src)
 {
+    os << "\t\tValue: " << src._value << endl;
+
+    WeightsCIt it    = src._weights.begin();
+    WeightsCIt itend = src._weights.end();
+    for (int weight=1; it!=itend; ++it, ++weight)
+    {
+        os << "\t\tWeight: " << weight << " ==>> " << *it << endl;
+    }
     return os;
 }
 
 ostream &
 operator<<(ostream &os, const NNLayer &src)
 {
+    NNNeuronsCIt it    = src._neurons.begin();
+    NNNeuronsCIt itend = src._neurons.end();
+    for (int neuron=0; it!=itend; ++it, ++neuron)
+    {
+        os << "\tNeuron: " << neuron << endl
+           << **it << endl;
+    }
     return os;
 }
 
 ostream &
 operator<<(ostream &os, const NeuralNet &src)
 {
+    NNLayersCIt it    = src._layers.begin();
+    NNLayersCIt itend = src._layers.end();
+    for (int layer=1; it!=itend; ++it, ++layer)
+    {
+        os << "Layer: " << layer << endl
+           << **it << endl;
+    }
     return os;
 }
 

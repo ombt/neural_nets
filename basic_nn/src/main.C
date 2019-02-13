@@ -21,8 +21,10 @@ main(int argc, char **argv)
     cout << "Topology: " << endl;
     cout << topology << endl;
 
-    cout << "Neural Net: " << endl;
+    cout << "Neural Net (1): " << endl;
     NeuralNet nn(topology);
+
+    cout << "Neural Net (2): " << endl;
     cout << nn << endl;
 
     NNVector inv, outv;

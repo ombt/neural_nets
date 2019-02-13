@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <limits>
 
 //
 // local includes
@@ -85,7 +86,7 @@ public: // member functions
     }
     inline const Weight &weight(long layer, long n, long next_n)
     {
-        return _weights[_offsets[layer] +
+        return _weights[_layer_offsets[layer] +
                         n * _neurons_per_layer[layer + 1] +
                         next_n];
     }
@@ -100,7 +101,7 @@ protected: // member data
     long _number_of_neurons;
     NeuronsPerLayer _neurons_per_layer;
     Weights _weights;
-    LayerOffsets _offsets;
+    LayerOffsets _layer_offsets;
 };
 
 class NNNeuron
@@ -142,6 +143,10 @@ protected: // member data
     Weights _weights;
 };
 
+typedef vector<ExtUseCntPtr<NNNeuron> > NNNeurons;
+typedef NNNeurons::iterator NNNeuronsIt;
+typedef NNNeurons::const_iterator NNNeuronsCIt;
+
 class NNLayer
 {
 public: // member functions
@@ -155,6 +160,7 @@ public: // member functions
     //
     // neuron - access NN in a layer
     // number_of_neurons - number of neurons in layer
+    // number_of_nodes - number of neurons + bias in layer
     // operator= - assignment operator
     // append - append a neueon
     //
@@ -168,8 +174,13 @@ public: // member functions
     }
     inline long number_of_neurons() const
     {
-        return _neurons.size();
+        return _neurons.size()-1; // do not include the bias node
     }
+    inline long number_of_nodes() const
+    {
+        return _neurons.size(); // include the bias node at index 0
+    }
+
     NNLayer &operator=(const NNLayer &rhs);
     virtual void append(NNNeuron *pnnn);
 
@@ -179,8 +190,12 @@ public: // member functions
     friend ostream &operator<<(ostream &os, const NNLayer &src);
 
 protected: // member data
-    vector<ExtUseCntPtr<NNNeuron> > _neurons;
+    NNNeurons _neurons;
 };
+
+typedef vector<ExtUseCntPtr<NNLayer> > NNLayers;
+typedef NNLayers::iterator NNLayersIt;
+typedef NNLayers::const_iterator NNLayersCIt;
 
 class NeuralNet
 {
@@ -235,7 +250,7 @@ public: // member functions
     //
     // apply - apply NN to an input and generate output
     //
-    void apply(const NNVector &inv, NNVector &outv) const;
+    void apply(const NNVector &inv, NNVector &outv);
 
     //
     // i/o operator
@@ -247,7 +262,7 @@ private: // not allowed
 
 protected: // member data
     NNTopology _topology;
-    vector<ExtUseCntPtr<NNLayer> > _layers;
+    NNLayers _layers;
 };
 
 #endif
