@@ -25,5 +25,15 @@ main(int argc, char **argv)
     NeuralNet nn(topology);
     cout << nn << endl;
 
+    NNVector inv, outv;
+    for (int i=0; i<nn.layer(0).number_of_neurons(); ++i)
+    {
+        inv.push_back(1.0);
+    }
+    cout << "In-Vector: " << inv << endl;
+
+    nn.apply(inv, outv);
+    cout << "Out-Vector: " << outv << endl;
+
     return 0;
 }

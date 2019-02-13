@@ -37,6 +37,8 @@ typedef LayerOffsets::const_iterator LayerOffsetsCIt;
 //
 typedef vector<double> NNVector;
 
+ostream &operator<<(ostream &os, const NNVector &nnv);
+
 class NNTopology
 {
 protected: // member data types
@@ -113,12 +115,17 @@ public: // member functions
 
     //
     // weight - access a weight
+    // number_of_weights - number of weights
     // operator= - assignment operator
     // append - append a weight
     //
     inline Weight &weight(long neuron)
     {
         return _weights[neuron];
+    }
+    inline long number_of_weights() const
+    {
+        return _weights.size();
     }
     NNNeuron &operator=(const NNNeuron &rhs);
     virtual void append(double weight);
@@ -127,6 +134,9 @@ public: // member functions
     // i/o operator
     //
     friend ostream &operator<<(ostream &os, const NNNeuron &src);
+
+public: // member data
+    mutable double  _value;
 
 protected: // member data
     Weights _weights;
@@ -144,6 +154,7 @@ public: // member functions
 
     //
     // neuron - access NN in a layer
+    // number_of_neurons - number of neurons in layer
     // operator= - assignment operator
     // append - append a neueon
     //
@@ -154,6 +165,10 @@ public: // member functions
     inline NNNeuron &neuron(long neuron)
     {
         return *_neurons[neuron];
+    }
+    inline long number_of_neurons() const
+    {
+        return _neurons.size();
     }
     NNLayer &operator=(const NNLayer &rhs);
     virtual void append(NNNeuron *pnnn);
@@ -189,11 +204,23 @@ public: // member functions
     {
         return (*_layers[layer])[neuron];
     }
+    inline const NNNeuron &neuron(long layer, long neuron) const
+    {
+        return (*_layers[layer])[neuron];
+    }
     inline NNLayer &layer(long layer)
     {
         return *_layers[layer];
     }
+    inline const NNLayer &layer(long layer) const
+    {
+        return *_layers[layer];
+    }
     inline NNLayer &operator[](long layer)
+    {
+        return *_layers[layer];
+    }
+    inline const NNLayer &operator[](long layer) const
     {
         return *_layers[layer];
     }

@@ -445,6 +445,33 @@ NeuralNet::load_topology()
     }
 }
 
+void
+NeuralNet::apply(const NNVector &inv, NNVector &outv) const
+{
+    assert(layer(0).number_of_neurons() == inv.size());
+
+    for (int ineuron=0; ineuron<layer(0).number_of_neurons(); ++ineuron)
+    {
+        neuron(0,ineuron)._value = inv[ineuron];
+    }
+
+    for (int ilayer=0; ilayer<number_of_layers(); ++ilayer)
+    {
+        const NNLayer &this_layer = layer(ilayer);
+
+        int inext_layer = ilayer + 1;
+        if (inext_layer < number_of_layers())
+        {
+            const NNLayer &next_layer = layer(inext_layer);
+            
+            // for (int ineuron=0
+        }
+        else
+        {
+        }
+    }
+}
+
 //
 // I/O operators
 //
@@ -481,11 +508,6 @@ operator<<(ostream &os, const NNTopology &src)
     return os;
 }
 
-void
-NeuralNet::apply(const NNVector &inv, NNVector &outv) const
-{
-}
-
 ostream &
 operator<<(ostream &os, const NNNeuron &src)
 {
@@ -501,6 +523,23 @@ operator<<(ostream &os, const NNLayer &src)
 ostream &
 operator<<(ostream &os, const NeuralNet &src)
 {
+    return os;
+}
+
+ostream &
+operator<<(ostream &os, const NNVector &nnv)
+{
+    os << "( ";
+    if (nnv.size() > 0)
+    {
+        int i=0;
+        for ( ; i<(nnv.size()-1); ++i)
+        {
+            os << nnv[i] << ",";
+        }
+        os << nnv[i];
+    }
+    os << " )";
     return os;
 }
 
