@@ -190,6 +190,8 @@ NNTopology::load_from_file(const string &file_path)
         }
     }
 
+    assert(state == End);
+
     _number_of_neurons = accumulate(_neurons_per_layer.begin(),
                                     _neurons_per_layer.end(), 0);
 
