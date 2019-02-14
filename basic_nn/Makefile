@@ -20,7 +20,8 @@ base_nn:	\
 		obj/main.o \
 		obj/BaseNN.o \
 		obj/StdStringUtils.o \
-		obj/RegexMatch.o
+		obj/RegexMatch.o \
+		-lm
 
 obj:
 	mkdir -p obj

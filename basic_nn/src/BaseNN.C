@@ -22,55 +22,315 @@
     cout << "Line: " << __LINE__ << " " << #X << ": " << endl << (X) << endl
 
 //
+// activation functions for NN
+//
+const char *NNActivator::IDENTITY = "IDENTITY";
+const char *NNActivator::SIGMOID = "SIGMOID";
+const char *NNActivator::TANH = "TANH";
+const char *NNActivator::RELU = "RELU";
+const char *NNActivator::BINARY_STEP = "BINARY_STEP";
+const char *NNActivator::ELU = "ELU";
+const char *NNActivator::SOFT_EXPONENTIAL = "SOFT_EXPONENTIAL";
+
+NNActivator::NNActivator(
+    const char *name) : 
+        _name(((name==NULL) ? IDENTITY : name))
+{
+}
+
+NNActivator::NNActivator(
+    const NNActivator &src) :
+        _name(src._name)
+{
+}
+
+NNActivator::~NNActivator()
+{
+}
+
+NNActivator &
+NNActivator::operator=(const NNActivator &rhs)
+{
+    if (this != &rhs)
+    {
+        _name = rhs._name;
+    }
+    return *this;
+}
+
+double 
+NNActivator::f(double x)
+{
+    return x;
+}
+
+double
+NNActivator::df(double x)
+{
+    return 1;
+}
+
+NNSigmoid::NNSigmoid() :
+    NNActivator(SIGMOID)
+{
+}
+
+NNSigmoid::NNSigmoid(const NNSigmoid &src) :
+    NNActivator(src)
+{
+}
+
+NNSigmoid::~NNSigmoid()
+{
+}
+
+NNSigmoid &
+NNSigmoid::operator=(const NNSigmoid &rhs)
+{
+    if (this != &rhs)
+    {
+        NNActivator::operator=(rhs);
+    }
+    return *this;
+}
+
+double 
+NNSigmoid::f(double x)
+{
+    return 1.0/(1.0+exp(-x));
+}
+
+double 
+NNSigmoid::df(double x)
+{
+    return 1;
+}
+
+NNTanh::NNTanh() :
+    NNActivator(TANH)
+{
+}
+
+NNTanh::NNTanh(const NNTanh &src) :
+    NNActivator(src)
+{
+}
+
+NNTanh::~NNTanh()
+{
+}
+
+NNTanh &
+NNTanh::operator=(const NNTanh &rhs)
+{
+    if (this != &rhs)
+    {
+        NNActivator::operator=(rhs);
+    }
+    return *this;
+}
+
+double 
+NNTanh::f(double x)
+{
+    return tanh(x);
+} 
+
+double 
+NNTanh::df(double x)
+{
+    return 1;
+}
+
+NNReLU::NNReLU() :
+    NNActivator(RELU)
+{
+}
+
+NNReLU::NNReLU(const NNReLU &src) :
+    NNActivator(src)
+{
+}
+
+NNReLU::~NNReLU()
+{
+}
+
+NNReLU &
+NNReLU::operator=(const NNReLU &rhs)
+{
+    if (this != &rhs)
+    {
+        NNActivator::operator=(rhs);
+    }
+    return *this;
+}
+
+double 
+NNReLU::f(double x)
+{
+    return ( (x<0.0) ? 0.0 : x );
+}
+
+double 
+NNReLU::df(double x)
+{
+    return 1;
+}
+
+NNBinaryStep::NNBinaryStep() :
+    NNActivator(BINARY_STEP)
+{
+}
+
+NNBinaryStep::NNBinaryStep(const NNBinaryStep &src) :
+    NNActivator(src)
+{
+}
+
+NNBinaryStep::~NNBinaryStep()
+{
+}
+
+NNBinaryStep &
+NNBinaryStep::operator=(const NNBinaryStep &rhs)
+{
+    if (this != &rhs)
+    {
+        NNActivator::operator=(rhs);
+    }
+    return *this;
+}
+
+double 
+NNBinaryStep::f(double x)
+{
+    return ( (x<0) ? 0 : 1 );
+}
+
+double 
+NNBinaryStep::df(double x)
+{
+    return 1;
+}
+
+NNELU::NNELU(double alpha) :
+    NNActivator(ELU),
+    _alpha(alpha)
+{
+}
+
+NNELU::NNELU(const NNELU &src) :
+    NNActivator(src),
+    _alpha(src._alpha)
+{
+}
+
+NNELU::~NNELU()
+{
+}
+
+NNELU &
+NNELU::operator=(const NNELU &rhs)
+{
+    if (this != &rhs)
+    {
+        NNActivator::operator=(rhs);
+
+        _alpha = rhs._alpha;
+    }
+    return *this;
+}
+
+double 
+NNELU::f(double x)
+{
+    if (x<0)
+    {
+        return _alpha*(exp(x)-1);
+    }
+    else
+    {
+        return x;
+    }
+}
+
+double 
+NNELU::df(double x)
+{
+    return 1;
+}
+
+NNSoftExponential::NNSoftExponential(double alpha) :
+    NNActivator(SOFT_EXPONENTIAL),
+        _alpha(alpha)
+{
+}
+
+NNSoftExponential::NNSoftExponential(const NNSoftExponential &src) :
+    NNActivator(src),
+        _alpha(src._alpha)
+{
+}
+
+NNSoftExponential::~NNSoftExponential()
+{
+}
+
+NNSoftExponential &
+NNSoftExponential::operator=(const NNSoftExponential &rhs)
+{
+    if (this != &rhs)
+    {
+        NNActivator::operator=(rhs);
+
+        _alpha = rhs._alpha;
+    }
+    return *this;
+}
+
+double 
+NNSoftExponential::f(double x)
+{
+    if (_alpha < 0)
+    {
+        return (-log(1-_alpha*(x+_alpha))/_alpha);
+    }
+    else if (_alpha == 0)
+    {
+        return x;
+    }
+    else
+    {
+        return ((exp(_alpha*x)-1)/_alpha + _alpha);
+    }
+}
+
+double 
+NNSoftExponential::df(double x)
+{
+    return 1;
+}
+
+//
 // NN topology for NN
 //
 NNTopology::NNTopology() : _number_of_layers(0),
                            _number_of_neurons(0),
                            _neurons_per_layer(),
                            _weights(),
-                           _layer_offsets()
+                           _layer_offsets(),
+                           _pactivators()
 {
 }
 
-NNTopology::NNTopology(long number_of_layers, 
-                       const NeuronsPerLayer &neurons_per_layer,
-                       const Weights &weights) :
-                           _number_of_layers(number_of_layers),
-                           _number_of_neurons(0),
-                           _neurons_per_layer(),
-                           _weights(),
-                           _layer_offsets()
-{
-    _neurons_per_layer.insert(_neurons_per_layer.begin(), 
-                              neurons_per_layer.begin(),
-                              neurons_per_layer.end());
-
-    _weights.insert(_weights.begin(), 
-                    weights.begin(),
-                    weights.end());
-    
-    _number_of_neurons = accumulate(_neurons_per_layer.begin(),
-                                    _neurons_per_layer.end(), 0);
-
-    long total = 0;
-    _layer_offsets.push_back(total);
-
-    NeuronsPerLayerCIt it    = _neurons_per_layer.begin();
-    NeuronsPerLayerCIt itend = _neurons_per_layer.end();
-    for ( ; it!=itend; ++it)
-    {
-        total += *it;
-        total += 1; // one bias weight per layer
-        _layer_offsets.push_back(total);
-    }
-}
-                       
 NNTopology::NNTopology(const NNTopology &src) :
                            _number_of_layers(src._number_of_layers),
                            _number_of_neurons(src._number_of_neurons),
                            _neurons_per_layer(),
                            _weights(),
-                           _layer_offsets()
+                           _layer_offsets(),
+                           _pactivators()
 {
     _neurons_per_layer.insert(_neurons_per_layer.begin(), 
                               src._neurons_per_layer.begin(),
@@ -81,8 +341,12 @@ NNTopology::NNTopology(const NNTopology &src) :
                     src._weights.end());
 
     _layer_offsets.insert(_layer_offsets.begin(), 
-                    src._layer_offsets.begin(),
-                    src._layer_offsets.end());
+                          src._layer_offsets.begin(),
+                          src._layer_offsets.end());
+
+    _pactivators.insert(_pactivators.begin(), 
+                        src._pactivators.begin(),
+                        src._pactivators.end());
 }
 
 void
@@ -130,11 +394,59 @@ NNTopology::load_from_file(const string &file_path)
         }
         case ReadNumberOfNeuronsPerLayer:
         {
+            vector<string> tokens;
+            split(value, tokens, " \t", true);
+            assert(tokens.size() >= 2);
+
             long number_of_neurons = 0;
-            istringstream(value) >> number_of_neurons;
+            istringstream(trim(tokens[0])) >> number_of_neurons;
 
             assert(number_of_neurons > 0);
             _neurons_per_layer.push_back(number_of_neurons);
+
+            NNActivatorPtr pactivator = NULL;
+            string act_type(trim(tokens[1]));
+            to_uppercase(act_type);
+            if (act_type == NNActivator::IDENTITY)
+            {
+                pactivator = new NNActivator;
+            }
+            else if (act_type == NNActivator::SIGMOID)
+            {
+                pactivator = new NNSigmoid;
+            }
+            else if (act_type == NNActivator::TANH)
+            {
+                pactivator = new NNTanh;
+            }
+            else if (act_type == NNActivator::RELU)
+            {
+                pactivator = new NNReLU;
+            }
+            else if (act_type == NNActivator::BINARY_STEP)
+            {
+                pactivator = new NNBinaryStep;
+            }
+            else if (act_type == NNActivator::ELU)
+            {
+                assert(tokens.size() == 3);
+                double alpha = 0.0;
+                istringstream(tokens[2]) >> alpha;
+                pactivator = new NNELU(alpha);
+            }
+            else if (act_type == NNActivator::SOFT_EXPONENTIAL)
+            {
+                assert(tokens.size() == 3);
+                double alpha = 0.0;
+                istringstream(tokens[2]) >> alpha;
+                pactivator = new NNSoftExponential(alpha);
+            }
+            else
+            {
+                cout << "Unknown activator: " << act_type << endl;
+                assert(0);
+            }
+            _pactivators.push_back(pactivator);
 
             if (--neurons_per_layer_to_read <= 0)
             {
@@ -223,6 +535,7 @@ NNTopology::operator=(const NNTopology &rhs)
         _neurons_per_layer.clear();
         _weights.clear();
         _layer_offsets.clear();
+        _pactivators.clear();
 
         _neurons_per_layer.insert(_neurons_per_layer.begin(), 
                                   rhs._neurons_per_layer.begin(),
@@ -235,6 +548,10 @@ NNTopology::operator=(const NNTopology &rhs)
         _layer_offsets.insert(_layer_offsets.begin(), 
                         rhs._layer_offsets.begin(),
                         rhs._layer_offsets.end());
+
+        _pactivators.insert(_pactivators.begin(), 
+                            rhs._pactivators.begin(),
+                            rhs._pactivators.end());
     }
 
     return *this;
@@ -288,12 +605,15 @@ NNNeuron::append(double weight)
 //
 // base neural net layer class
 //
-NNLayer::NNLayer() :
+NNLayer::NNLayer(NNActivatorPtr pactivator) :
+    _pactivator(pactivator),
     _neurons()
 {
+    assert(_pactivator != NULL);
 }
 
 NNLayer::NNLayer(const NNLayer &src) :
+    _pactivator(src._pactivator),
     _neurons()
 {
     _neurons.insert(_neurons.begin(), 
@@ -311,6 +631,8 @@ NNLayer::operator=(const NNLayer &rhs)
 {
     if (this != &rhs)
     {
+        _pactivator = rhs._pactivator;
+
         _neurons.clear();
         _neurons.insert(_neurons.begin(), 
                         rhs._neurons.begin(), 
@@ -381,7 +703,7 @@ NeuralNet::load_topology()
         //
         // new layer
         //
-        NNLayer *pl = new NNLayer;
+        NNLayer *pl = new NNLayer(_topology.activator(layer));
 
         long next_layer = layer + 1;
         if (next_layer < max_layers)
@@ -464,56 +786,49 @@ NeuralNet::apply(const NNVector &inv, NNVector &outv)
     //
     // set all bias terms to one
     //
+DUMP(*this);
     for (int ilayer=0; ilayer<number_of_layers(); ++ilayer)
     {
         layer(ilayer).neuron(0)._value = 1.0;
     }
-DUMP(*this);
 
     for (int ineuron=0; ineuron<layer(0).number_of_neurons(); ++ineuron)
     {
         layer(0).neuron(ineuron+1)._value = inv[ineuron];
     }
-DUMP(*this);
 
     for (int ilayer=0; ilayer<number_of_layers(); ++ilayer)
     {
         NNLayer &this_layer = layer(ilayer);
-DUMP(this_layer);
 
         int inext_layer = ilayer + 1;
         if (inext_layer < number_of_layers())
         {
             NNLayer &next_layer = layer(inext_layer);
-DUMP(next_layer);
             for (int inl=1; inl<=next_layer.number_of_neurons(); ++inl)
             {
                 NNNeuron &next_layer_neuron = next_layer[inl];
                 next_layer_neuron._value = 0.0;
-DUMP(next_layer_neuron);
 
                 for (int il=0; il<this_layer.number_of_nodes(); ++il)
                 {
                     NNNeuron &this_layer_neuron = this_layer[il];
-DUMP(this_layer_neuron);
                     next_layer_neuron._value += 
                         this_layer_neuron._value*this_layer_neuron.weight(inl-1);
                 }
-DUMP(next_layer_neuron);
+
+                next_layer_neuron._value = 
+                    next_layer.activate(next_layer_neuron._value);
             }
-DUMP(next_layer);
         }
         else
         {
-DUMP(this_layer);
             outv.clear();
-DUMP(outv);
             for (int il=1; il<=this_layer.number_of_neurons(); ++il)
             {
                 NNNeuron &this_layer_neuron = this_layer[il];
                 outv.push_back(this_layer_neuron._value);
             }
-DUMP(outv);
         }
     }
 DUMP(*this);

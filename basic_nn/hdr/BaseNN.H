@@ -8,6 +8,7 @@
 #include <string>
 #include <iostream>
 #include <limits>
+#include <math.h>
 
 //
 // local includes
@@ -33,12 +34,169 @@ typedef vector<long> LayerOffsets;
 typedef LayerOffsets::iterator LayerOffsetsIt;
 typedef LayerOffsets::const_iterator LayerOffsetsCIt;
 
-//
 // base neural net classes
 //
 typedef vector<double> NNVector;
 
 ostream &operator<<(ostream &os, const NNVector &nnv);
+
+class NNActivator
+{
+public: // member functions
+    //
+    // ctors, dtor and assignment
+    //
+    NNActivator(const char *name = NULL);
+    NNActivator(const NNActivator &src);
+    virtual ~NNActivator();
+    NNActivator &operator=(const NNActivator &rhs);
+
+    //
+    // f - activation function
+    // fp - first derivative of activation function
+    //
+    virtual double f(double x);
+    virtual double df(double x);
+
+public: // member data
+
+    static const char *IDENTITY;
+    static const char *SIGMOID;
+    static const char *TANH;
+    static const char *RELU;
+    static const char *BINARY_STEP;
+    static const char *ELU;
+    static const char *SOFT_EXPONENTIAL;
+
+protected: // member data
+    string _name;
+};
+
+typedef NNActivator * NNActivatorPtr;
+// typedef vector<ExtUseCntPtr<NNActivator> > NNActivators;
+typedef vector<NNActivatorPtr> NNActivators;
+typedef NNActivators::iterator NNActivatorsIt;
+typedef NNActivators::const_iterator NNActivatorsCIt;
+
+class NNSigmoid : public NNActivator
+{
+public: // member functions
+    //
+    // ctors, dtor and assignment
+    //
+    NNSigmoid();
+    NNSigmoid(const NNSigmoid &src);
+    ~NNSigmoid();
+    NNSigmoid &operator=(const NNSigmoid &rhs);
+
+    //
+    // f - activation function
+    // fp - first derivative of activation function
+    //
+    virtual double f(double x);
+    virtual double df(double x);
+};
+
+class NNTanh : public NNActivator
+{
+public: // member functions
+    //
+    // ctors, dtor and assignment
+    //
+    NNTanh();
+    NNTanh(const NNTanh &src);
+    ~NNTanh();
+    NNTanh &operator=(const NNTanh & );
+
+    //
+    // f - activation function
+    // fp - first derivative of activation function
+    //
+    virtual double f(double x);
+    virtual double df(double x);
+};
+
+class NNReLU : public NNActivator
+{
+public: // member functions
+    //
+    // ctors, dtor and assignment
+    //
+    NNReLU();
+    NNReLU(const NNReLU &src);
+    ~NNReLU();
+    NNReLU &operator=(const NNReLU & );
+
+    //
+    // f - activation function
+    // fp - first derivative of activation function
+    //
+    virtual double f(double x);
+    virtual double df(double x);
+};
+
+class NNBinaryStep : public NNActivator
+{
+public: // member functions
+    //
+    // ctors, dtor and assignment
+    //
+    NNBinaryStep();
+    NNBinaryStep(const NNBinaryStep &src);
+    ~NNBinaryStep();
+    NNBinaryStep &operator=(const NNBinaryStep &rhs);
+
+    //
+    // f - activation function
+    // fp - first derivative of activation function
+    //
+    virtual double f(double x);
+    virtual double df(double x);
+};
+
+class NNELU : public NNActivator
+{
+public: // member functions
+    //
+    // ctors, dtor and assignment
+    //
+    NNELU(double alpha = 1.0);
+    NNELU(const NNELU &src);
+    ~NNELU();
+    NNELU &operator=(const NNELU &rhs);
+
+    //
+    // f - activation function
+    // fp - first derivative of activation function
+    //
+    virtual double f(double x);
+    virtual double df(double x);
+
+protected: // member data
+    double _alpha;
+};
+
+class NNSoftExponential : public NNActivator
+{
+public: // member functions
+    //
+    // ctors, dtor and assignment
+    //
+    NNSoftExponential(double alpha = 1.0);
+    NNSoftExponential(const NNSoftExponential &src);
+    ~NNSoftExponential();
+    NNSoftExponential &operator=(const NNSoftExponential &rhs);
+
+    //
+    // f - activation function
+    // fp - first derivative of activation function
+    //
+    virtual double f(double x);
+    virtual double df(double x);
+
+protected: // member data
+    double _alpha;
+};
 
 class NNTopology
 {
@@ -56,9 +214,6 @@ public: // member functions
     // ctors and dtor
     //
     NNTopology();
-    NNTopology(long number_of_layers, 
-               const NeuronsPerLayer &neurons_per_layer, // not including bias
-               const Weights &weights);
     NNTopology(const NNTopology &src);
     virtual ~NNTopology();
 
@@ -90,6 +245,11 @@ public: // member functions
                         n * _neurons_per_layer[layer + 1] +
                         next_n];
     }
+    inline NNActivatorPtr activator(long layer)
+    {
+        assert((0<=layer) && (layer< _pactivators.size()));
+        return _pactivators[layer];
+    }
 
     //
     // i/o operator
@@ -102,6 +262,7 @@ protected: // member data
     NeuronsPerLayer _neurons_per_layer;
     Weights _weights;
     LayerOffsets _layer_offsets;
+    NNActivators _pactivators;
 };
 
 class NNNeuron
@@ -153,7 +314,7 @@ public: // member functions
     //
     // ctors and dtor
     //
-    NNLayer();
+    NNLayer(NNActivatorPtr pactivator = NULL);
     NNLayer(const NNLayer &src);
     virtual ~NNLayer();
 
@@ -163,6 +324,7 @@ public: // member functions
     // number_of_nodes - number of neurons + bias in layer
     // operator= - assignment operator
     // append - append a neueon
+    // activate - run activator on a value
     //
     inline NNNeuron &operator[](long neuron)
     {
@@ -180,6 +342,10 @@ public: // member functions
     {
         return _neurons.size(); // include the bias node at index 0
     }
+    inline double activate(double x)
+    {
+        return _pactivator->f(x);
+    }
 
     NNLayer &operator=(const NNLayer &rhs);
     virtual void append(NNNeuron *pnnn);
@@ -190,6 +356,7 @@ public: // member functions
     friend ostream &operator<<(ostream &os, const NNLayer &src);
 
 protected: // member data
+    NNActivatorPtr _pactivator;
     NNNeurons _neurons;
 };
 
