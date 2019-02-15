@@ -4,6 +4,9 @@ DEBUG =
 
 INCLUDES = -Ihdr -I../lib/hdr
 
+LIBS_PATHS = -L../lib
+LIBS = -lutils -lm
+
 CPP = g++
 CPP_OPTS = -g -c
 
@@ -20,9 +23,8 @@ base_nn:	\
 	$(LD) $(LD_OPTS) -o base_nn \
 		obj/main.o \
 		obj/BaseNN.o \
-		-L../lib \
-		-lutils \
-		-lm
+		$(LIBS_PATHS) \
+		$(LIBS)
 
 obj:
 	mkdir -p obj
