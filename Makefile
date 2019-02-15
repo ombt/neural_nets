@@ -5,7 +5,11 @@ MAKE_OPTS =
 CD = cd
 CD_OPTS =
 
-SUBDIRS = lib basic_nn_1 basic_nn_2
+SUBDIRS = \
+	lib \
+	basic_nn_1 \
+	basic_nn_2 \
+	basic_nn_3
 
 all:
 	for SUBDIR in $(SUBDIRS); do \
