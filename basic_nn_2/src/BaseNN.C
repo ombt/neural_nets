@@ -22,6 +22,123 @@
     cout << "Line: " << __LINE__ << " " << #X << ": " << endl << (X) << endl
 
 //
+// error calculations
+//
+NNError::NNError()
+{
+}
+
+NNError::NNError(const NNError &src)
+{
+}
+
+NNError::~NNError()
+{
+}
+
+NNError &
+NNError::operator=(const NNError &rhs)
+{
+    return *this;
+}
+
+NNAbsoluteValue::NNAbsoluteValue() : NNError()
+{
+}
+
+NNAbsoluteValue::NNAbsoluteValue(
+    const NNAbsoluteValue &src) :
+        NNError(src)
+{
+}
+
+NNAbsoluteValue::~NNAbsoluteValue()
+{
+}
+
+NNAbsoluteValue &
+NNAbsoluteValue::operator=(const NNAbsoluteValue &rhs)
+{
+    if (this != &rhs)
+    {
+        NNError::operator=(rhs);
+    }
+    return *this;
+}
+
+double 
+NNAbsoluteValue::operator()(const NNVector &expected, const NNVector &actual) const
+{
+    if (expected.size() == actual.size())
+    {
+        double total = 0.0;
+
+        NNVectorCIt xit    = expected.begin();
+        NNVectorCIt xitend = expected.end();
+        NNVectorCIt ait    = actual.begin();
+        NNVectorCIt aitend = actual.end();
+        for ( ; (xit!=xitend) && (ait!=aitend); ++xit, ++ait)
+        {
+            double diff = *xit - *ait;
+            total += ((diff>=0) ? diff : -diff);
+        }
+        return total;
+    }
+    else
+    {
+        return numeric_limits<double>::quiet_NaN();
+    }
+}
+
+NNChiSquared::NNChiSquared() : NNError()
+{
+}
+
+NNChiSquared::NNChiSquared(
+    const NNChiSquared &src) :
+        NNError(src)
+{
+}
+
+NNChiSquared::~NNChiSquared()
+{
+}
+
+NNChiSquared &
+NNChiSquared::operator=(const NNChiSquared &rhs)
+{
+    if (this != &rhs)
+    {
+        NNError::operator=(rhs);
+    }
+    return *this;
+}
+
+double 
+NNChiSquared::operator()(const NNVector &expected, const NNVector &actual) const
+{
+    if (expected.size() == actual.size())
+    {
+        double total = 0.0;
+
+        NNVectorCIt xit    = expected.begin();
+        NNVectorCIt xitend = expected.end();
+        NNVectorCIt ait    = actual.begin();
+        NNVectorCIt aitend = actual.end();
+        for ( ; (xit!=xitend) && (ait!=aitend); ++xit, ++ait)
+        {
+            double diff = *xit - *ait;
+            total += diff*diff;
+        }
+        return ::sqrt(total);
+    }
+    else
+    {
+        return numeric_limits<double>::quiet_NaN();
+    }
+}
+
+//
 // activation functions for NN
 //
 const char *NNActivator::IDENTITY = "IDENTITY";
@@ -446,7 +563,7 @@ NNTopology::load_from_file(const string &file_path)
                 cout << "Unknown activator: " << act_type << endl;
                 assert(0);
             }
-            _pactivators.push_back(pactivator);
+            _pactivators.push_back(ExtUseCntPtr<NNActivator>(pactivator));
 
             if (--neurons_per_layer_to_read <= 0)
             {

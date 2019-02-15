@@ -37,8 +37,64 @@ typedef LayerOffsets::const_iterator LayerOffsetsCIt;
 // base neural net classes
 //
 typedef vector<double> NNVector;
+typedef NNVector::iterator NNVectorIt;
+typedef NNVector::const_iterator NNVectorCIt;
 
 ostream &operator<<(ostream &os, const NNVector &nnv);
+
+class NNError
+{
+public: // member functions
+    //
+    // ctors, dtor and assignment
+    //
+    NNError();
+    NNError(const NNError &src);
+    virtual ~NNError();
+    NNError &operator=(const NNError &rhs);
+
+    //
+    // operator() - calculate error
+    //
+    virtual double operator()(const NNVector &expected, 
+                              const NNVector &actual) const  = 0;
+};
+
+class NNAbsoluteValue : public NNError
+{
+public: // member functions
+    //
+    // ctors, dtor and assignment
+    //
+    NNAbsoluteValue();
+    NNAbsoluteValue(const NNAbsoluteValue &src);
+    virtual ~NNAbsoluteValue();
+    NNAbsoluteValue &operator=(const NNAbsoluteValue &rhs);
+
+    //
+    // operator() - calculate error
+    //
+    virtual double operator()(const NNVector &expected, 
+                              const NNVector &actual) const;
+};
+
+class NNChiSquared : public NNError
+{
+public: // member functions
+    //
+    // ctors, dtor and assignment
+    //
+    NNChiSquared();
+    NNChiSquared(const NNChiSquared &src);
+    virtual ~NNChiSquared();
+    NNChiSquared &operator=(const NNChiSquared &rhs);
+
+    //
+    // operator() - calculate error
+    //
+    virtual double operator()(const NNVector &expected, 
+                              const NNVector &actual) const;
+};
 
 class NNActivator
 {
@@ -73,8 +129,7 @@ protected: // member data
 };
 
 typedef NNActivator * NNActivatorPtr;
-// typedef vector<ExtUseCntPtr<NNActivator> > NNActivators;
-typedef vector<NNActivatorPtr> NNActivators;
+typedef vector<ExtUseCntPtr<NNActivator> > NNActivators;
 typedef NNActivators::iterator NNActivatorsIt;
 typedef NNActivators::const_iterator NNActivatorsCIt;
 
@@ -298,7 +353,7 @@ public: // member functions
     friend ostream &operator<<(ostream &os, const NNNeuron &src);
 
 public: // member data
-    mutable double  _value;
+    mutable double _value;
 
 protected: // member data
     Weights _weights;
@@ -416,8 +471,15 @@ public: // member functions
 
     //
     // apply - apply NN to an input and generate output
+    // error - calculate error term for actual out versus expected out
     //
     void apply(const NNVector &inv, NNVector &outv);
+    inline double error(const NNVector &actual, 
+                        const NNVector &expected, 
+                        const NNError &ftor)
+    {
+        return ftor(actual, expected);
+    }
 
     //
     // i/o operator
