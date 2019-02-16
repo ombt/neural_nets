@@ -22,16 +22,10 @@ using namespace std;
 //
 typedef double Weight;
 
-#if 0
-typedef vector<Weight> Weights;
-typedef Weights::iterator WeightsIt;
-typedef Weights::const_iterator WeightsCIt;
-#else
 template <class WeightType>
 class Weights : public vector<WeightType>
 {
 };
-#endif
 
 typedef vector<long> NeuronsPerLayer;
 typedef NeuronsPerLayer::iterator NeuronsPerLayerIt;

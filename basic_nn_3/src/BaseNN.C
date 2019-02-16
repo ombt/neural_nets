@@ -969,13 +969,8 @@ operator<<(ostream &os, const NNTopology &src)
     }
 
     os << endl << "Weights: " << endl;
-#if 0
-    WeightsCIt w_it    = src._weights.begin();
-    WeightsCIt w_itend = src._weights.end();
-#else
     Weights<Weight>::const_iterator w_it    = src._weights.begin();
     Weights<Weight>::const_iterator w_itend = src._weights.end();
-#endif
     for ( ; w_it!=w_itend; ++w_it)
     {
         os << "Weight: " << *w_it << endl;
