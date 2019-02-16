@@ -34,8 +34,7 @@ main(int argc, char **argv)
     }
     cout << "In-Vector: " << inv << endl;
 
-    long last_layer = nn.number_of_layers() - 1;
-    for (int i=0; i<nn.layer(last_layer).number_of_neurons(); ++i)
+    for (int i=0; i<nn.layer(nn.last_layer()).number_of_neurons(); ++i)
     {
         expected_outv.push_back(2.0);
     }

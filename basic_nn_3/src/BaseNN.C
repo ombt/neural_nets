@@ -292,7 +292,7 @@ NNReLU::f(double x)
 double 
 NNReLU::df(double x)
 {
-    return 1;
+    return ( (x<0.0) ? 0.0 : 1 );
 }
 
 NNBinaryStep::NNBinaryStep() :

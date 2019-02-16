@@ -6,7 +6,9 @@ CD = cd
 CD_OPTS =
 
 SUBDIRS = \
-	lib \
+	utils \
+	random \
+	distributions \
 	basic_nn_1 \
 	basic_nn_2 \
 	basic_nn_3

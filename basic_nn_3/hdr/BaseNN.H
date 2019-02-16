@@ -23,9 +23,7 @@ using namespace std;
 typedef double Weight;
 
 template <class WeightType>
-class Weights : public vector<WeightType>
-{
-};
+class Weights : public vector<WeightType> { };
 
 typedef vector<long> NeuronsPerLayer;
 typedef NeuronsPerLayer::iterator NeuronsPerLayerIt;
@@ -437,6 +435,8 @@ public: // member functions
     // operator= - assignment operator
     // append - append a new layer
     // load_topology - create NN from topology
+    // first_layer - return 0
+    // last_layer - return number of layers minus 1
     //
     inline NNNeuron &neuron(long layer, long neuron)
     {
@@ -469,6 +469,14 @@ public: // member functions
     NeuralNet &operator=(const NeuralNet &rhs);
     virtual void append(NNLayer *pnnl);
     virtual void load_topology();
+    inline long first_layer() const
+    {
+        return 0;
+    }
+    inline long last_layer() const
+    {
+        return _layers.size() - 1;
+    }
 
     //
     // apply - apply NN to an input and generate output

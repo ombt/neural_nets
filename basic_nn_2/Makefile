@@ -2,9 +2,9 @@
 DEBUG = 
 # DEBUG = -DLOCAL_DEBUG=1
 
-INCLUDES = -Ihdr -I../lib/hdr
+INCLUDES = -Ihdr -I../utils/hdr
 
-LIBS_PATHS = -L../lib
+LIBS_PATHS = -L../utils
 LIBS = -lutils -lm
 
 CPP = g++
@@ -19,7 +19,7 @@ base_nn:	\
 	obj \
 	obj/main.o \
 	obj/BaseNN.o \
-	../lib/libutils.a
+	../utils/libutils.a
 	$(LD) $(LD_OPTS) -o base_nn \
 		obj/main.o \
 		obj/BaseNN.o \
@@ -41,8 +41,8 @@ obj/main.o:	\
 obj/BaseNN.o: \
 	src/BaseNN.C \
 	hdr/BaseNN.H \
-	../lib/hdr/ExtUseCntPtr.H \
-	../lib/hdr/Atomic.H
+	../utils/hdr/ExtUseCntPtr.H \
+	../utils/hdr/Atomic.H
 	$(CPP) $(CPP_OPTS) \
 		$(INCLUDES) \
 		$(DEBUG) \
