@@ -2,10 +2,10 @@
 #define __OMBT_NEGATIVE_BINOMIAL_H
 
 // local headers
-#include "Returns.h"
-#include "Debug.h"
-#include "Random.h"
-#include "Geometric.h"
+#include "Returns.H"
+#include "Debug.H"
+#include "Random.H"
+#include "Geometric.H"
 
 // negative binomial distribution
 class NegativeBinomial

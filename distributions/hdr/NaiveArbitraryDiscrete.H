@@ -7,9 +7,9 @@
 #include <vector>
 
 // local headers
-#include "Returns.h"
-#include "Debug.h"
-#include "Random.h"
+#include "Returns.H"
+#include "Debug.H"
+#include "Random.H"
 
 // arbitrary discrete distribution - naive implementation
 class NaiveArbitraryDiscrete

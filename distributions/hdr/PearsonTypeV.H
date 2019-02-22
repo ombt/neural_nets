@@ -6,10 +6,10 @@
 #include <string.h>
 
 // local headers
-#include "Returns.h"
-#include "Debug.h"
-#include "ExtUseCntPtr.h"
-#include "Gamma.h"
+#include "Returns.H"
+#include "Debug.H"
+#include "ExtUseCntPtr.H"
+#include "Gamma.H"
 
 // pearson type V distribution
 class PearsonTypeV

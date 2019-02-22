@@ -6,9 +6,9 @@
 #include <math.h>
 
 // local headers
-#include "Returns.h"
-#include "Debug.h"
-#include "Random.h"
+#include "Returns.H"
+#include "Debug.H"
+#include "Random.H"
 
 // weibull distribution
 class Weibull
